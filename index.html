@@ -8,11 +8,38 @@
 </head>
 
 <body>
-    <form id="arraynumeros">
+    <form id="numeritos">
         <label>Pon tu texto aqui</label>
-        <input type="text" value="numbers" placeholder="1,2,3,4,5">
+        <input type="text" id="numbers" name="numbers" placeholder="1,2,3,4,5">
         <input type="submit">
     </form>
+    <script>
+        const formu = document.getElementById("numeritos");
+
+        formu.addEventListener("submit", async e => {
+            e.preventDefault();
+            const valor = document.getElementById("numbers").value.trim();
+
+            //aqui estan todaaaas las restricciones, las cuales son un chingo
+            const res = /^\d[\d\s]*(\.\s*\d[\d\s]*)?(\s*,\s*\d[\d\s]*(\.\s*\d[\d\s]*)?)*$/;
+
+            if (!res.test(valor)) {
+                alert("Datos invalidos, porfavor verifica que esten bien acomodados");
+                return;
+            }
+
+            await fetch("/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ numbers: valor })
+            });
+
+            //aqui nomas pongo en blanco el input cuando termino
+            document.querySelector("#numbers").value = "";
+        });
+    </script>
 </body>
 
 </html>
