@@ -5,14 +5,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Merge Sort</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #abe7e7;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        form {
+            background-color: #ffffff;
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #resultado {
+            width: auto;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 100px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #444;
+        }
+
+        input[type="text"] {
+            width: 90%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+        }
+
+        input[type="submit"] {
+            background-color: #aee6f0;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #4c838d;
+        }
+    </style>
 </head>
 
 <body>
     <form id="numeritos">
-        <label>Pon tu texto aqui</label>
+        <label>Introduce la lista de numeros, recuerda que cada numero debe estar dividido por comas</label>
         <input type="text" id="numbers" name="numbers" placeholder="1,2,3,4,5">
         <input type="submit">
     </form>
+
+    <div id="resultado"></div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const formu = document.getElementById("numeritos");
 
@@ -20,15 +78,26 @@
             e.preventDefault();
             const valor = document.getElementById("numbers").value.trim();
 
-            //aqui estan todaaaas las restricciones, las cuales son un chingo
+            /*aqui estan todaaaas las restricciones, las cuales son un chingo,pero de forma resumida:
+            1.- Debe empezar con un numero
+            2.- puede haber espacios en los numeros
+            3.- los numeros se separan por comas
+            4.- puede haber espacios antes y despues de la coma
+            5.- no puede haber comas juntas ni puntos juntos
+            */
             const res = /^\d[\d\s]*(\.\s*\d[\d\s]*)?(\s*,\s*\d[\d\s]*(\.\s*\d[\d\s]*)?)*$/;
 
             if (!res.test(valor)) {
-                alert("Datos invalidos, porfavor verifica que esten bien acomodados");
+                Swal.fire({
+                    title: "Datos invalidos",
+                    text: "Porfavor revisa que tus datos esten correctos",
+                    icon: "warning",
+                    confirmButtonText: "Aceptar"
+                });
                 return;
             }
 
-            await fetch("/", {
+            const response = await fetch("/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -36,6 +105,11 @@
                 body: JSON.stringify({ numbers: valor })
             });
 
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            const resultado = doc.querySelector("p");
+            document.getElementById("resultado").innerHTML = resultado.outerHTML;
             //aqui nomas pongo en blanco el input cuando termino
             document.querySelector("#numbers").value = "";
         });

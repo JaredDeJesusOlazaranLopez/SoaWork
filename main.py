@@ -1,13 +1,40 @@
-import asgiref
+import asyncio
 import uvicorn
 import math
 import json
 
-async def merge(A,p,r):
+async def mergeSort(A,p,r):
     if p>=r:
         return
     q=math.floor((p+r)/2)
+    t1 = asyncio.create_task(mergeSort(A, p, q))
+    t2 = asyncio.create_task(mergeSort(A, q+1, r))
+    await t1
+    await t2
+    await merge(A, p, q, r)
 
+async def merge(A, p, q, r):
+    L = A[p:q+1]
+    R = A[q+1:r+1]
+    i = 0
+    j = 0
+    k = p
+    while i < (q - p + 1) and j < (r - q):
+        if L[i] <= R[j]:
+            A[k] = L[i]
+            i += 1
+        else:
+            A[k] = R[j]
+            j += 1
+        k += 1
+    while i < (q - p + 1):
+        A[k] = L[i]
+        i += 1
+        k += 1
+    while j < (r - q):
+        A[k] = R[j]
+        j += 1
+        k += 1
 
 async def app(scope, receive, send):
     if scope["type"] != "http":
@@ -41,8 +68,13 @@ async def app(scope, receive, send):
         numbers = data.get("numbers")
         #quita espacios y separa por comas 
         lista = [float("".join(x.split())) for x in numbers.split(",")]
-        print(lista)
+        #print(lista)
         #print(numbers)
+        n=0
+        for _ in lista:
+         n += 1
+        await mergeSort(lista, 0, n - 1)
+        resultado = ", ".join(str(x) for x in lista)
 
         await send({
           'type': 'http.response.start',
@@ -52,9 +84,11 @@ async def app(scope, receive, send):
           ],
         })
 
-        with open("index.html", "rb") as f:
+        with open("index.html", "r") as f:
             content = f.read()
 
+        content = content.replace("</body>", f"<p>Resultado: {resultado}</p></body>")
+        content = content.encode()
         await send({'type': 'http.response.body','body': content})
 
 if __name__ == "__main__":
