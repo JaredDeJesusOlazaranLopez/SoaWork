@@ -70,10 +70,7 @@ async def app(scope, receive, send):
         lista = [float("".join(x.split())) for x in numbers.split(",")]
         #print(lista)
         #print(numbers)
-        n=0
-        for _ in lista:
-         n += 1
-        await mergeSort(lista, 0, n - 1)
+        await mergeSort(lista, 0, len(lista) - 1)
         resultado = ", ".join(str(x) for x in lista)
 
         await send({
